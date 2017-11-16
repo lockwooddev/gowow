@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -94,4 +95,56 @@ func TestGetAuctionDataStatus(t *testing.T) {
 	}
 
 	assert.Equal(&expected, auctionDataStatus)
+}
+
+// TestGetRealmStatus tests fetching all realm statusses for a specific region
+func TestGetRealmStatus(t *testing.T) {
+	assert := assert.New(t)
+
+	body := []byte(`
+	{
+		"realms": [{
+			"type": "pvp",
+			"population": "n/a",
+			"queue": false,
+			"status": true,
+			"name": "Aegwynn",
+			"slug": "aegwynn",
+			"battlegroup": "Vengeance",
+			"locale": "en_US",
+			"timezone": "America/Chicago",
+			"connected_realms": ["daggerspine", "bonechewer", "gurubashi", "hakkar", "aegwynn"]
+		}]
+	}
+	`)
+
+	mockServer := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write(body) }),
+	)
+	defer mockServer.Close()
+
+	mockHandler := MockHandler{StatusCode: 200, Data: body}
+	api := apiClient{apikey: "testkey", handler: mockHandler}
+
+	realmStatus, err := api.GetRealmStatus("eu", "", "")
+	assert.NoError(err)
+
+	expected := RealmStatus{
+		Realms: []Realm{
+			{
+				Type:            "pvp",
+				Population:      "n/a",
+				Queue:           false,
+				Status:          true,
+				Name:            "Aegwynn",
+				Slug:            "aegwynn",
+				Battlegroup:     "Vengeance",
+				Locale:          "en_US",
+				Timezone:        "America/Chicago",
+				ConnectedRealms: []string{"daggerspine", "bonechewer", "gurubashi", "hakkar", "aegwynn"},
+			},
+		},
+	}
+
+	assert.Equal(&expected, realmStatus)
 }

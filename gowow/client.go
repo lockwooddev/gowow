@@ -75,3 +75,28 @@ func (a apiClient) GetAuctionDataStatus(region string, realm string, locale stri
 
 	return auctionDataStatus, nil
 }
+
+func (a apiClient) GetRealmStatus(region string, locale string, jsonp string) (*RealmStatus, error) {
+	options := map[string]string{"locale": locale, "jsonp": jsonp}
+
+	r := resource{
+		Region:   region,
+		Endpoint: "wow/realm/status",
+		Options:  options,
+	}
+
+	response, err := a.fetchResource(r)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	realmStatus := &RealmStatus{}
+	err = json.NewDecoder(response.Body).Decode(realmStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	return realmStatus, nil
+}
