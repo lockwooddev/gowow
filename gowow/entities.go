@@ -34,9 +34,9 @@ type Auction struct {
 	Buyout     uint64            `json:"buyout"`
 	Quantity   uint16            `json:"quantity"`
 	Timeleft   string            `json:"timeLeft"`
-	Rand       int32             `json:"rand"`
+	Rand       int64             `json:"rand"`
 	Seed       int64             `json:"seed"`
-	Context    uint32            `json:"context"`
+	Context    uint64            `json:"context"`
 	Bonuslists []AuctionBonus    `json:"bonusLists"`
 	Modifiers  []AuctionModifier `json:"modifiers"`
 
@@ -68,7 +68,7 @@ func (a AuctionDataStatus) LastModified() uint64 {
 
 func (a AuctionDataStatus) GetAuctions() (*AuctionData, error) {
 	client := &http.Client{
-		Timeout: time.Second * time.Duration(30),
+		Timeout: time.Hour * time.Duration(1),
 	}
 
 	request, err := http.NewRequest("GET", a.URL(), nil)
